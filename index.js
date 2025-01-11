@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 // Ruta para obtener todos los libros y autores
 app.get('/api/books', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM books'); // Obtenemos todos los libros
+        const result = await pool.query('SELECT * FROM book'); // Obtenemos todos los libros
         res.json(result.rows); // Enviamos los resultados en formato JSON
     } catch (err) {
         console.error('Error al obtener libros', err);
@@ -62,6 +62,6 @@ app.post('/api/books', async (req, res) => {
 });
 
 // Inicia el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
 });
