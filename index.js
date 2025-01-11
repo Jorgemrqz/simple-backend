@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 // Configuración para la conexión a la base de datos PostgreSQL
 const pool = new Pool({
-    user: 'userb',           // Reemplaza con tu usuario de PostgreSQL
+    user: 'postgres',           // Reemplaza con tu usuario de PostgreSQL
     host: '192.168.220.137',           // Dirección de tu servidor de base de datos
     database: 'book',   // Nombre de tu base de datos
     password: '123',   // Tu contraseña de base de datos
@@ -48,7 +48,7 @@ app.post('/api/books', async (req, res) => {
     try {
         // Insertamos un nuevo libro en la tabla 'books'
         const result = await pool.query(
-            'INSERT INTO books (title, author) VALUES ($1, $2) RETURNING *',
+            'INSERT INTO book (title, author) VALUES ($1, $2) RETURNING *',
             [title, author]
         );
         res.status(201).json({
