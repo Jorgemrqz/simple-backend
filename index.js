@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
     res.send('¡Hola, Mundo!');
 });
 
-// Función para obtener los libros, primero desde la base de datos y luego desde Google Cloud Storage si hay error
+// Función para obtener los libros
 async function fetchBooks() {
     try {
         const result = await pool.query('SELECT * FROM book');
@@ -71,9 +71,30 @@ app.get('/api/books', async (req, res) => {
     }
 });
 
+// Función para escribir en CSV
+async function appendToCSV(title, author, email) {
+    return new Promise((resolve, reject) => {
+        const ws = fs.createWriteStream(localPath, { flags: 'a' });
+        format({ headers: false }).write([title, author, email]).pipe(ws);
+
+        ws.on('finish', async () => {
+            console.log(' CSV actualizado correctamente.');
+            try {
+                await bucket.upload(localPath, { destination: cloudPath });
+                console.log('☁️ Archivo subido a Google Cloud Storage.');
+                resolve();
+            } catch (err) {
+                reject('❌ Error al subir el archivo a GCS: ' + err);
+            }
+        });
+
+        ws.on('error', reject);
+    });
+}
+
 // Ruta para insertar un libro y su autor
 app.post('/api/books', async (req, res) => {
-    const { title, author, email } = req.body; // Se agrega email para identificar al autor
+    const { title, author, email } = req.body;
 
     if (!title || !author || !email) {
         return res.status(400).json({ mensaje: 'Título, autor y email son requeridos' });
@@ -84,6 +105,9 @@ app.post('/api/books', async (req, res) => {
             'INSERT INTO book (title, author, email) VALUES ($1, $2, $3) RETURNING *',
             [title, author, email]
         );
+
+        // Guardar en el CSV y subir a GCS
+        await appendToCSV(title, author, email);
 
         res.status(201).json({
             mensaje: 'Libro insertado correctamente',
@@ -107,7 +131,6 @@ app.post('/api/comments', async (req, res) => {
         const books = await fetchBooks();
         let email = '';
 
-        // Buscar el libro y obtener el correo del autor
         for (let book of books) {
             if (book.title === title) {
                 email = book.email;
