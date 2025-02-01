@@ -121,7 +121,7 @@ app.post('/api/comments', async (req, res) => {
 
         // Enviar el comentario al autor por correo
         const mailOptions = {
-            from: 'tu-correo@gmail.com',
+            from: 'erika05cristin@gmail.com',
             to: email,
             subject: `Nuevo comentario en tu libro: ${title}`,
             text: `Han dejado un comentario en tu libro:\n\n"${comment}"`
